@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Virtual Photo Museum</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Merriweather', serif;
+    background-color: #87ceeb;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  header {
+    background-color: #222;
+    color: #fafafa;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 1.5px;
+    user-select: none;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 2.5rem auto 4rem;
+    padding: 0 1rem;
+  }
+
+  .intro {
+    max-width: 700px;
+    margin: 0 auto 3rem auto;
+    text-align: center;
+  }
+
+  .intro h2 {
+    font-size: 2.4rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .intro p {
+    color: #555;
+    font-size: 1.1rem;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.8rem;
+  }
+
+  .photo-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .photo-card:hover,
+  .photo-card:focus-within {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+    outline: none;
+  }
+
+  .photo-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    user-select: none;
+  }
+
+  .photo-info {
+    padding: 1rem 1.2rem 1.5rem;
+    flex-grow: 1;
+  }
+
+  .photo-info h3 {
+    margin: 0 0 0.4rem 0;
+    font-weight: 700;
+    font-size: 1.3rem;
+  }
+
+  .photo-info p {
+    color: #666;
+    font-size: 0.95rem;
+  }
+
+  /* Modal */
+  #photo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(34, 34, 34, 0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 150;
+    padding: 1rem;
+  }
+  #photo-modal.show {
+    display: flex;
+  }
+  #modal-content {
+    max-width: 90vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 50px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+  #modal-image {
+    max-width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    display: block;
+    background: black;
+  }
+  #modal-caption {
+    padding: 1rem 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+    background-color: #fafafa;
+    user-select: none;
+  }
+  #modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    color: white;
+    cursor: pointer;
+    font-weight: 700;
+    user-select: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+    .photo-card img {
+      height: 180px;
+    }
+  }
+</style>
+</head>
+<body>
+  <header>
+    JE-EM's Art Gallery
+  </header>
+  <main>
+    <section class="intro" aria-label="Museum Introduction">
+      <h2>An art gallery of moments frozen in time
+      <p>Explore the beauty of love and life through our photo collection. Each image tells a story, capturing the essence of fleeting moments that make life extraordinary. </p>
+    </section>
+
+    <section class="gallery-grid" id="gallery" aria-label="Photo gallery">
+      <!-- Photo cards inserted here by JS -->
+    </section>
+  </main>
+
+  <div id="photo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-caption" tabindex="-1" aria-hidden="true">
+    <button id="modal-close" aria-label="Close photo modal">&times;</button>
+    <div id="modal-content">
+      <img id="modal-image" src="" alt="" />
+      <div id="modal-caption"></div>
+    </div>
+  </div>
+
+<script>
+  const photos = [
+    {
+      id: 1,
+      title: "Eye",
+      description: "The eye that makes the starry night hide from its beauty",
+      src: "https://scontent.fmnl30-1.fna.fbcdn.net/v/t39.30808-6/489308805_3584785821829812_300098862705669606_n.jpg?stp=cp6_dst-jpg_tt6&_nc_cat=103&ccb=1-7&_nc_sid=669761&_nc_eui2=AeGng5b_K9S86_r44xce13AjD9xgH2F-FDAP3GAfYX4UMNSc84f8zErLbshE4L6mn8hrf4Nt1VpBzH5gMEmn3vQ_&_nc_ohc=oN91AaXkOPsQ7kNvwESOeEl&_nc_oc=Admtz8Yg2AOz_E-0_9vdxuUfC_UTbiEIIO-aRYuMIpKenHbFtFi6So-pPdEyvc1XE0w&_nc_zt=23&_nc_ht=scontent.fmnl30-1.fna&_nc_gid=aiUb4BMwOQG61Rjree2ZOA&oh=00_AfIDN16tAQbsHGHelyYYSDvqDd772FtbCQsy8dfjZ4kZzw&oe=683B9813"
+    },
+    {
+      id: 2,
+      title: "Sining",
+      description: "An artwork could never be as beautiful as you",
+      src: "https://scontent.fmnl30-2.fna.fbcdn.net/v/t39.30808-6/489068765_3584787348496326_1773564933593197428_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=669761&_nc_eui2=AeFvF0bIrxp7d7X_xXHs2MqU5Z0LHOGfP9flnQsc4Z8_15Al-DSv87rGWJARcdWTbuTaA4d_qHYs-DSdI4iBB32T&_nc_ohc=qZuhAtFuTMoQ7kNvwHdHXUd&_nc_oc=Adndncop9ZkkJu6yLQNkRr9S-i9Uaqxe_WC6lHlceXS2iu0yJq8S3FTphTIiWAqaTXM&_nc_zt=23&_nc_ht=scontent.fmnl30-2.fna&_nc_gid=aiUb4BMwOQG61Rjree2ZOA&oh=00_AfJlCgbJaOR7ChXixMHXsVSAE3E-FnQhJmOFT-Ue-XQwXQ&oe=683B6C0F"
+    },
+    {
+      id: 3,
+      title: "Nothing",
+      description: "But there's nothing like doing nothing with you",
+      src: "https://scontent.fmnl30-2.fna.fbcdn.net/v/t39.30808-6/495220166_3608200122821715_88702858870396800_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=669761&_nc_eui2=AeHZVe3LC72q66v5yvFtmP03nA-vjSMG2j-cD6-NIwbaP2XPN5cyTPXgBTwzrobixdaRHUZO7AMhZSz_QHA0G4RU&_nc_ohc=ENwH5oc_xp0Q7kNvwEzxMrW&_nc_oc=AdnNbDRJFY32llSU-z3wEngxwoHgfJgTdgBXMuHuG1tc7tbbBhTlZEqBz-9ZKAog0Ko&_nc_zt=23&_nc_ht=scontent.fmnl30-2.fna&_nc_gid=aiUb4BMwOQG61Rjree2ZOA&oh=00_AfIG457DYkn5R4-6rU1OBOW4xJcXTGlNm5kSwzCGMHL1rA&oe=683B82B7"
+    },
+    {
+      id: 4,
+      title: "Reflection",
+      description: "Silly reflection, you are the reason why I smile",
+      src: "https://scontent.fmnl30-2.fna.fbcdn.net/v/t39.30808-6/494008241_3604749546500106_4864930477432488279_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=669761&_nc_eui2=AeF6r8cch96bwCEkr60ina6pAxFY6JXo-wQDEVjolej7BO9g0-2FgmpOek_Vp-Tq_IYK4G4FJMcN83_STyVxNXdt&_nc_ohc=0B89pYNti8AQ7kNvwGvYDFK&_nc_oc=AdkJ2O3gmo2drMAJBEVljN9mrF4UjPjO3BGrUjHpfXiIMdLuIVgw1C7W4YWlOs7VLSo&_nc_zt=23&_nc_ht=scontent.fmnl30-2.fna&_nc_gid=aiUb4BMwOQG61Rjree2ZOA&oh=00_AfJQiWizaZAmPtgWs_xbTD-hQPoF21xeiTABI6eDEOptrQ&oe=683B9058"
+    },
+    {
+      id: 5,
+      title: "Bang",
+      description: "Bang The sound of the camera shutter capturing a moment.",
+      src: "https://scontent.fmnl30-3.fna.fbcdn.net/v/t39.30808-6/495219105_3608200259488368_7980032863650500158_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=669761&_nc_eui2=AeHWjWiZcxHR62un9vA8qhT5rsiPHJBZ07muyI8ckFnTuSPa2aeO9Wxehv4eHnigPC9gQrxEC-odcE4cHG5V6vUy&_nc_ohc=wLTAr57U4b4Q7kNvwH7nYb_&_nc_oc=AdlE6VFbyW1v2APlLleQM5-6xgdt2jf4WyYQYiO8kB5Le05W1fCLeJidB74nwsQlSdY&_nc_zt=23&_nc_ht=scontent.fmnl30-3.fna&_nc_gid=aiUb4BMwOQG61Rjree2ZOA&oh=00_AfJUYRxthKWlJzm22bQ4GaO4O9O0r4J0SgOBm-_tgSyxCQ&oe=683B9312"
+    },
+    {
+      id: 6,
+      title: "Lay me down",
+      description: "Lay me down in your arms, where I can find peace",
+      src: "https://scontent.fmnl30-2.fna.fbcdn.net/v/t39.30808-6/495373842_3608200079488386_1338824250139988214_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=669761&_nc_eui2=AeHsr1ZhQZmjjNkGiIRALMeXpKxIH7Q5cbWkrEgftDlxtZBmwr6q880phFU_0emG8HVzNQd3PKsdE8eMUg5zh6aa&_nc_ohc=YW2pJc8UIm0Q7kNvwGSZknB&_nc_oc=AdmcvoDf7Eoj3xDPtlV0LO-eCEGOsasS6fmxkLNyiwDjP5C9QorR6k06YPPDnTK5XPQ&_nc_zt=23&_nc_ht=scontent.fmnl30-2.fna&_nc_gid=aiUb4BMwOQG61Rjree2ZOA&oh=00_AfLmM8RwG21K_ShBI1hIy7d1Rmqn-dcAMAZFnjSCscmaFA&oe=683B7442"
+    }
+  ];
+
+  const gallery = document.getElementById('gallery');
+  const modal = document.getElementById('photo-modal');
+  const modalImage = document.getElementById('modal-image');
+  const modalCaption = document.getElementById('modal-caption');
+  const modalCloseBtn = document.getElementById('modal-close');
+
+  function createPhotoCard(photo) {
+    const card = document.createElement('article');
+    card.className = 'photo-card';
+    card.tabIndex = 0;
+    card.setAttribute('aria-label', `${photo.title}, click to view larger image`);
+    card.innerHTML = `
+      <img src="${photo.src}" alt="${photo.title}" />
+      <div class="photo-info">
+        <h3>${photo.title}</h3>
+        <p>${photo.description}</p>
+      </div>
+    `;
+
+    card.addEventListener('click', () => openModal(photo));
+    card.addEventListener('keypress', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openModal(photo);
+      }
+    });
+
+    return card;
+  }
+
+  function openModal(photo) {
+    modalImage.src = photo.src;
+    modalImage.alt = photo.title;
+    modalCaption.textContent = photo.title + " - " + photo.description;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    modalCloseBtn.focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    modalImage.src = '';
+    modalImage.alt = '';
+  }
+
+
+  modalCloseBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (modal.classList.contains('show') && e.key === 'Escape') {
+      closeModal();
+    }
+  });
+
+  // Render photo gallery
+  photos.forEach(photo => {
+    gallery.appendChild(createPhotoCard(photo));
+  });
+</script>
+</body>
+</html>
+
